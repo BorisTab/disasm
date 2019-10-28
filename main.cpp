@@ -13,6 +13,8 @@ int getFileSize(const char *inPath);
 
 int readFile(const char inPath[], char *text, size_t textSize);
 
+void commandPrint(FILE *disasm, char *name, char **cur, int argType);
+
 int main(const int argc, char * const argv[]) {
     char *binFilePath = argv[argc - 1];
     char *pathPoint = strrchr(binFilePath, '.');
@@ -35,19 +37,9 @@ int main(const int argc, char * const argv[]) {
     if (readFile(binFilePath, buffer, binSize)) perror("Error:");
 
     while (cur < buffer + binSize) {
-#define DEF_CMD(name, num, nArgs, code, asmCode) \
+#define DEF_CMD(name, num, argType, code, asmCode) \
         case num: { \
-            fprintf(disasm, "%s", #name); \
-            cur++; \
-            if (nArgs == 1) { \
-                fprintf(disasm, " %d", *((int *) cur)); \
-                cur += sizeof(int); \
-            } \
-            else if (nArgs == 2) { \
-                fprintf(disasm, " %cx", *cur); \
-                cur++; \
-            } \
-            fprintf(disasm, "\n"); \
+            commandPrint(disasm, #name, &cur, argType); \
             break; \
         }
 
@@ -93,4 +85,23 @@ int readFile(const char inPath[], char *text, size_t textSize) {
     fread(text, 1, textSize, myFile);
     fclose(myFile);
     return 0;
+}
+
+//!
+//! \param[out] disasm File buffer for out
+//! \param[in] name command name
+//! \param cur binary buffer
+//! \param[in argType argument type
+void commandPrint(FILE *disasm, char *name, char **cur, int argType) {
+    fprintf(disasm, "%s", name);
+            (*cur)++;
+            if (argType == 1) {
+                fprintf(disasm, " %d", *((int *) *cur));
+                *cur += sizeof(int);
+            }
+            else if (argType == 2) {
+                fprintf(disasm, " %cx", **cur);
+                (*cur)++;
+            }
+            fprintf(disasm, "\n");
 }
