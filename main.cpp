@@ -43,14 +43,11 @@ int main(const int argc, char * const argv[]) {
             break; \
         }
 
-        bool endChecker = false;
         switch (*cur) {
 
 #include"../asmCompiler/commands.h"
-
             default: printf("Syntax error");
         }
-        if (endChecker) break;
     }
 #undef DEF_CMD
 
